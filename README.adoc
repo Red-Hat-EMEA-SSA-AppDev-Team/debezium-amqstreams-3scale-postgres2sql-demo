@@ -66,14 +66,6 @@ oc adm policy add-scc-to-user anyuid system:serviceaccount:appdev-kafka:default
 oc apply -f 02-postgres-service.yml -n appdev-kafka
 ----
 
-That config sets `postgres` as username and also `postgres` as password
-for the PostgreSQL db:
-
-[source,yaml]
-----
-include::02-postgres-service.yml[lines=26..38]
-----
-
 ==== SQL Server
 Port is 1433 and username and passwords can be customized as a container parameter. 
 Find the deployment of the SQL Server container here: https://raw.githubusercontent.com/johwes/sqlworkshops-sqlonopenshift/master/sqlonopenshift/01_deploy/sqldeployment.yaml
