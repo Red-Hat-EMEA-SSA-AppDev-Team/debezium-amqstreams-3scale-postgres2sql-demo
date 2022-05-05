@@ -10,20 +10,32 @@ To run this demo you need to have an OpenShift cluster up and running and
 a user with sufficient rights on that cluster.
 
 === Setup Project `appdev-kafka`
-
 Setup a namespace for this example, e.g. this demo uses "appdev-kafka":
 
 [source,console]
 ----
 oc new-project appdev-kafka --display-name="Debezium AMQ Streams"
 ----
-
 === Setup Red Hat Container Registry Secret
 
 For downloading the AMQ Streams Kafka container image in the next step,
 a Registry Service Account must be created on the Red Hat Customer Portal
 in the https://access.redhat.com/terms-based-registry/[Registry Service Accounts]
 section.
+
+== Installation and Configuration
+
+The demo consist of all these components:
+
+* PostgreSQL: the source database.
+
+* Debezium PostgreSQL Connector: changes from one database table are written to a Kafka topic whose name corresponds to the table name.
+
+*  AMQ stream cluster: a real time event streaming platform.
+
+*  Kafka Connect with Camel SQL connector: reads the changed data capture messages from Kafka topics and, according to the message type, it applies an action to the SQL server database.
+
+* SQL Server: target database
 
 === Install AMQ Streams (Strimzi Operator)
 
