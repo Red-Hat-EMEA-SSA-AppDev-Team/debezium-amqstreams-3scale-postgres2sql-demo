@@ -4,7 +4,7 @@ This demo for Red Hat Streams (Kafka) will show how to replicate data and
 data changes from a Postgres database with Debezium into a SQLServer db
 using a Camel SQL Kafka Connector.
 
-image::debezium-postgresql-sqlserver.png[]
+image::images/debezium-postgresql-sqlserver.png[]
 
 == Prerequisites
 
