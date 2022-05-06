@@ -159,7 +159,7 @@ table.
 
 [source,yaml,title='07-camel-connector-sink.yaml']
 ----
-include::07-camel-connector-sink.yaml[lines=10..]
+include::07-camel-connector-sink.yaml[]
 ----
 
 Applying that config to start the Camel SQL Kafka Sink Connector:
