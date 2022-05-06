@@ -85,9 +85,9 @@ Database client, two options:
 Now it is time to create a database with the name dbo.order1, and also setup an orders table in that schema (use the sa user to create the new database and table and grant permissions):
 
 `Order` table creation in SQL server:
-[source,sql,title='create-table-order1.sql']
+[source,console,sql,title='create-table-order1.sql']
 ----
-include::"create-table-order1.sql"[lines=1..10]
+include::create-table-order1.sql[lines=1..-1]
 ----
 
 === Start Debezium Postgres Source Connector
