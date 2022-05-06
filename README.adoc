@@ -157,11 +157,6 @@ Single-Message-Transform (SMT) and use the provided SQL Server
 query to write messages into that `dbo.order1`
 table.
 
-[source,yaml,title='07-camel-connector-sink.yaml']
-----
-include::07-camel-connector-sink.yaml[]
-----
-
 Applying that config to start the Camel SQL Kafka Sink Connector:
 
 [source,console]
@@ -179,18 +174,13 @@ arrived in the replicated table:
 ----
 SELECT * FROM order1;
 
-# +-----+--------------------+---------------------------------------+--------+
-# | id  | name               | description                           | weight |
-# +-----+--------------------+---------------------------------------+--------+
-# | 101 | scooter            | Small 2-wheel scooter                 |   3.14 |
-# | 102 | car battery        | 12V car battery                       |    8.1 |
-# | 103 | 12-pack drill bits | 12-pack of drill bits                 |    0.8 |
-# | 104 | hammer             | 12oz carpenter's hammer               |   0.75 |
-# | 105 | hammer             | 14oz carpenter's hammer               |  0.875 |
-# | 106 | hammer             | 16oz carpenter's hammer               |      1 |
-# | 107 | rocks              | box of assorted rocks                 |    5.3 |
-# | 108 | jacket             | water resistent black wind breaker    |    0.1 |
-# | 109 | spare tire         | 24 inch spare tire                    |   22.2 |
-# +-----+--------------------+---------------------------------------+--------+
-# 9 rows in set (0.01 sec)
+# +-------+--------------------+-------------+------------+-------------------+
+# | id    |    order_date      | purchaser   | quantity   |   product_id      |
+# +-------+--------------------+-------------+------------+-------------------+
+# | 10001 |    2016-01-31      |    1001     |     1      |       102         |
+# | 10002 |    2016-01-31      |    1002     |     1      |       105         |
+# | 10003 |    2016-01-31      |    1002     |     1      |       106         |
+# | 10004 |    2016-01-31      |    1003     |     1      |       107         |
+# +-------+--------------------+-------------+------------+-------------------+
+# 4 rows in set (0.01 sec)
 ----
