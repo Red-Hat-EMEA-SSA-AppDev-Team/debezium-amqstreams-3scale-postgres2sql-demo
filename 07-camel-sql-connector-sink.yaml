@@ -22,7 +22,7 @@ spec:
     pk.mode: "record_key"
     database.history.kafka.topic: inventory.inventory.ordershistory
     camel.component.sql.dataSource.user: "sa"
-    camel.component.sql.dataSource.password: "XXXXX"
+    camel.component.sql.dataSource.password: "change-mssql-pwd"
     camel.component.sql.dataSource.serverName: "mssql-service.appdev-kafka.svc"
     camel.component.sql.dataSource.trustServerCertificate: true
     camel.component.sql.dataSource: "#class:com.microsoft.sqlserver.jdbc.SQLServerDataSource"

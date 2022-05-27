@@ -49,7 +49,7 @@ CustomResourceDefinition objects.
 
 [source,console]
 ----
-oc apply -f 01-kafka-event-broker.yaml -n appdev-kafka
+oc apply -f 01-kafka-event-broker.yml -n appdev-kafka
 ----
 
 For further installation options, like using the OpenShift OperatorHub,
@@ -80,7 +80,7 @@ Database client, two options:
 
 * Through port-forwarding option to access from your local: oc port-forward “msql_pod_name” 1433:1433 &
 
-* Get into the pod and /opt/mssql-tools/bin/sqlcmd -U sa -P XXXXXXX SELECT * FROM  INFORMATION_SCHEMA.TABLES; GO
+* Get into the pod and /opt/mssql-tools/bin/sqlcmd -U sa -P change-mssql-pwd SELECT * FROM  INFORMATION_SCHEMA.TABLES; GO
 
 Now it is time to create a database with the name dbo.order1, and also setup an orders table in that schema (use the sa user to create the new database and table and grant permissions):
 
