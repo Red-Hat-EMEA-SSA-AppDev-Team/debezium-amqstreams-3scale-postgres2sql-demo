@@ -56,6 +56,14 @@ For further installation options, like using the OpenShift OperatorHub,
 look at https://access.redhat.com/documentation/en-us/red_hat_amq/2020.q4/html/deploying_and_upgrading_amq_streams_on_openshift/deploy-intro_str#con-streams-installation-methods_str[AMQ Streams installation methods].
 
 
+Next command addresses an issue with the persisten volume creation (might be unnecessary).
+
+[source,console]
+----
+oc adm policy add-scc-to-user anyuid system:serviceaccount:appdev-kafka:default
+----
+
+
 === Setup demo databases
 This demo uses the Debezium PostgreSQL Example database, and an empty SQL Server database as the destination.
 
@@ -64,7 +72,6 @@ The image used is from debezium repo, in particular a postgresql example with al
 The username and password are set as a parameter.  
 [source,console]
 ----
-oc adm policy add-scc-to-user anyuid system:serviceaccount:appdev-kafka:default
 oc apply -f 02-postgres-service.yml -n appdev-kafka
 ----
 
