@@ -1,5 +1,5 @@
 #oc create secret generic mssql --from-literal=SA_PASSWORD="Sql2019isfast"
-apiVersion: apps/v1'
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mssql-deployment
