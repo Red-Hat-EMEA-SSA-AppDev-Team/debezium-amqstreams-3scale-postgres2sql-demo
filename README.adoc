@@ -49,11 +49,19 @@ CustomResourceDefinition objects.
 
 [source,console]
 ----
-oc apply -f 01-kafka-event-broker.yaml -n appdev-kafka
+oc apply -f 01-kafka-event-broker.yml -n appdev-kafka
 ----
 
 For further installation options, like using the OpenShift OperatorHub,
 look at https://access.redhat.com/documentation/en-us/red_hat_amq/2020.q4/html/deploying_and_upgrading_amq_streams_on_openshift/deploy-intro_str#con-streams-installation-methods_str[AMQ Streams installation methods].
+
+
+Next command addresses an issue with the persisten volume creation (might be unnecessary).
+
+[source,console]
+----
+oc adm policy add-scc-to-user anyuid system:serviceaccount:appdev-kafka:default
+----
 
 
 === Setup demo databases
@@ -64,7 +72,6 @@ The image used is from debezium repo, in particular a postgresql example with al
 The username and password are set as a parameter.  
 [source,console]
 ----
-oc adm policy add-scc-to-user anyuid system:serviceaccount:appdev-kafka:default
 oc apply -f 02-postgres-service.yml -n appdev-kafka
 ----
 
@@ -78,9 +85,17 @@ oc apply -f 03-msqldeployment.yml -n appdev-kafka
 ----
 Database client, two options:   
 
-* Through port-forwarding option to access from your local: oc port-forward “msql_pod_name” 1433:1433 &
+* Through port-forwarding option to access from your local: `+oc port-forward <msql_pod_name> 1433:1433+`
 
-* Get into the pod and /opt/mssql-tools/bin/sqlcmd -U sa -P XXXXXXX SELECT * FROM  INFORMATION_SCHEMA.TABLES; GO
+* Get into the pod and `/opt/mssql-tools/bin/sqlcmd -U sa -P change-mssql-pwd`
+
+Then issue the follwing commands:
+
+[source,console]
+----
+1> SELECT * FROM  INFORMATION_SCHEMA.TABLES
+2> GO
+----
 
 Now it is time to create a database with the name dbo.order1, and also setup an orders table in that schema (use the sa user to create the new database and table and grant permissions):
 

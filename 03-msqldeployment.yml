@@ -1,5 +1,14 @@
-#oc create secret generic mssql --from-literal=SA_PASSWORD="Sql2019isfast"
-apiVersion: apps/v1'
+#oc create secret generic mssql --from-literal=SA_PASSWORD="change-mssql-pwd"
+apiVersion: v1
+data:
+  SA_PASSWORD: Y2hhbmdlLW1zc3FsLXB3ZA==
+kind: Secret
+metadata:
+  name: mssql
+  namespace: appdev-kafka
+type: Opaque
+---
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mssql-deployment
