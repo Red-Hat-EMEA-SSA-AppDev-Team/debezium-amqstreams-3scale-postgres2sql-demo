@@ -39,7 +39,12 @@ The demo consist of all these components:
 
 * SQL Server: target database
 
-=== Install AMQ Streams (Strimzi Operator)
+* In addition, for monitoring Debezium together with all the components we deploy: 
+**  Prometheus: provides an open source set of components for systems monitoring and alert notification.
+**  Grafana: provides visualizations of Prometheus metrics.
+
+
+=== Install Red Hat AMQ Streams (Strimzi Operator)
 
 [NOTE]
 ====
@@ -62,7 +67,6 @@ Next command addresses an issue with the persisten volume creation (might be unn
 ----
 oc adm policy add-scc-to-user anyuid system:serviceaccount:appdev-kafka:default
 ----
-
 
 === Setup demo databases
 This demo uses the Debezium PostgreSQL Example database, and an empty SQL Server database as the destination.
@@ -199,3 +203,49 @@ SELECT * FROM order1;
 # +-------+--------------------+-------------+------------+-------------------+
 # 4 rows in set (0.01 sec)
 ----
+
+Now connect to the SQL instance and check if data successfully
+arrived in the replicated table:
+
+=== Monitoring
+
+*This demo will use Prometheus Operator and Grafana Operator to deploy them and monitor the AMQ Streams ecosystem easily.*
+
+Note: The Kafka and Debezium metrics configurations are already created when you applied 01-kafka-event-broker.yml and 04-debezium-postgresql-connect.yml scripts.
+
+==== Installing Prometheus Operator
+1. Navigate to the OperatorHub (Operators -> OperatorHub)
+2. Type prometheus in the Filter by keyword
+3. Select on the Prometheus Operator
+4. Review the Community Operator notice, and click Continue
+5. Click Install
+6. Review the default options, and click Subscribe
+
+==== Installing Grafana Operator
+1. Navigate to the OperatorHub (Operators -> OperatorHub)
+2. Type grafana in the Filter by keyword
+3. Select on the Grafana Operator
+4. Review the Community Operator notice, and click Continue
+5. Click Install
+6. Review the default options, and click Subscribe
+
+
+==== Grafana Configuration
+
+1.Set up the prometheus HTTP URL: http://prometheus-operated.appdev-kafka.svc:9090 into the Prometheus data source.
+
+image::images/datasources-prometheus.png[]
+
+2.Import Grafana dashboards:
+**** 
+. Go to "Create (Dashboard)" option -> import and click on the "upload json" button
+.. **Debezium** select debezium-dashboard.json file included in this repo.
+.. **Strimzi** find the dashboards json files in this repo: https://github.com/strimzi/strimzi-kafka-operator/tree/main/examples/metrics/grafana-dashboards 
+****
+
+3.Go to the Debezium dashboard and set these parameters as follows to run:
+****
+. Connector Type: **postgres**
+. Connector Name: **inventory**
+****
+image::images/grafana-debezium.png[]
