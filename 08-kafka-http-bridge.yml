@@ -1,0 +1,11 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaBridge
+metadata:
+  name: my-bridge
+  namespace: appdev-kafka
+spec:
+  enableMetrics: true
+  bootstrapServers: 'event-broker-dr-kafka-bootstrap.appdev-kafka.svc:9092'
+  http:
+    port: 8080
+  replicas: 1

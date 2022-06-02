@@ -1,0 +1,61 @@
+#    from https://raw.githubusercontent.com/debezium/debezium-ui/main/oc-demo/05-ui.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: dbzui-service
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: dbzui-service
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dbzui-service-config
+data:
+  KAFKA_CONNECT_URIS: http://my-connect-cluster-connect-api.appdev-kafka.svc:8083
+  UI_MODE: prod
+  UI_BASE_URI: https://dbzui-appdev-kafka.apps.ocp4.quitala.eu/api
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dbzui-service
+  annotations:
+    app.openshift.io/connects-to: dbzui-db-pg,dbzui-connect
+spec:
+  selector:
+    matchLabels:
+      app: dbzui-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: dbzui-service
+        strimzi.io/kind: cluster-operator        
+    spec:
+      containers:
+      - name: dbzui-service
+        image: quay.io/debezium/debezium-ui:latest
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: dbzui-service-config
+---
+apiVersion: v1
+kind: Route
+metadata:
+  name: dbzui-route
+#  annotations:
+#    haproxy.router.openshift.io/ip_whitelist: 127.0.0.1/32, 127.0.1.1/32
+spec:
+  host: https://dbzui-appdev-kafka.apps.ocp4.quitala.eu
+  to:
+    kind: Service
+    name: dbzui-service
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
