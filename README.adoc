@@ -6,6 +6,10 @@ using a Camel SQL Kafka Connector.
 
 image::images/debezium-postgresql-sqlserver.png[]
 
+At the end of this Readme you will find a second part (optional) of this demo, where, in addition, we expose CDC events through a **secure** REST API to both external or internal client applications. This is the diagram including the second part:
+
+image::images/debezium-3scale.png[]
+
 == Prerequisites
 
 To run this demo you need to have an OpenShift cluster up and running and
@@ -207,30 +211,21 @@ SELECT * FROM order1;
 Now connect to the SQL instance and check if data successfully
 arrived in the replicated table:
 
-=== Monitoring
+== Monitoring
 
 *This demo will use Prometheus Operator and Grafana Operator to deploy them and monitor the AMQ Streams ecosystem easily.*
 
 Note: The Kafka and Debezium metrics configurations are already created when you applied 01-kafka-event-broker.yml and 04-debezium-postgresql-connect.yml scripts.
 
-==== Installing Prometheus Operator
+=== Installing Prometheus and Grafana Operators (install both)
 1. Navigate to the OperatorHub (Operators -> OperatorHub)
-2. Type prometheus in the Filter by keyword
-3. Select on the Prometheus Operator
+2. Type prometheus / grafana in the Filter by keyword
+3. Select on the Prometheus / Grafana Operator
 4. Review the Community Operator notice, and click Continue
 5. Click Install
 6. Review the default options, and click Subscribe
 
-==== Installing Grafana Operator
-1. Navigate to the OperatorHub (Operators -> OperatorHub)
-2. Type grafana in the Filter by keyword
-3. Select on the Grafana Operator
-4. Review the Community Operator notice, and click Continue
-5. Click Install
-6. Review the default options, and click Subscribe
-
-
-==== Grafana Configuration
+=== Grafana Configuration
 
 1.Set up the prometheus HTTP URL: http://prometheus-operated.appdev-kafka.svc:9090 into the Prometheus data source.
 
@@ -249,3 +244,121 @@ image::images/datasources-prometheus.png[]
 . Connector Name: **inventory**
 ****
 image::images/grafana-debezium.png[]
+
+== SECOND PART: Adding HTTP REST API and Protection  (Optional)
+
+This section exposes CDC events through a **secure** REST API to both external or internal client applications.
+**Prerequisites**: 3scale deployed on the same Debezium OpenShift cluster.
+
+=== Kafka HTTP Bridge 
+HTTP Bridge and Route creation:
+[source,console]
+----
+oc apply -f 08-kafkabridgehttp.yml -n appdev-kafka
+----
+
+=== Kafka HTTP Bridge / 3scale Integration
+
+3scale enables security and protection to the REST API provided by Kafka HTTP bridge, now you can monitor API traffic and expose the API to external consumers in a secure way. 
+
+When Kafka HTTP Bridge and 3scale are running in the same OpenShift cluster you can use the **3scale service discovery** feature, which it is possible to scan for discoverable API services that are running in the same OpenShift cluster and automatically import the associated API definitions into 3scale.
+
+To discover the HTTP Bridge service with 3scale when it is deployed in a different namespace. There are two options depending on whether you are allowed to view a specific OpenShift user or the 3scale service account:
+
+**** 
+. Give permission to a specific 3scale/OpenShift user:  
+https://access.redhat.com/documentation/en-us/red_hat_3scale_api_management/2.6/html/admin_portal_guide/service-discovery
+
+. Give permission to the 3scale service account. In order to add view permissions to the service account amp you need to use the following command, noticing the syntax which references the scc is: “system:serviceaccount:namespace:serviceaccountname”. 
+    The 3scale service account is called amp and the 3scale namespace in my environment is appdev-apimanager
+[source,console]
+----
+    oc adm policy add-role-to-user view system:serviceaccount:appdev-apimanager:amp -n appdev-kafka
+    oc rollout latest dc/system-app
+----
+****
+
+=== 3scale configuration
+
+==== Import the Kafka HTTP API
+After giving permissions, 3scale is able to discover the Kafka HTTP API. Just signing in 3scale Administration console, create new product and choosing "Import from OpenShift". You will see the service successfully imported in 3scale. 
+
+image::images/3scale-discovery.png[]
+
+==== Create a 3scale Application Plan
+For publishing an API in 3scale you must configure at least an Application Plan with their rate limits if this is a requirement.
+
+image::images/3scale-application-plan.png[]
+
+==== Create an Application Client 
+In order to obtain the credential to access the API, create a 3scale Application through Accounts --> choose an Account --> Click on "New Application" button.
+
+image::images/3scale-create-application.png[]
+
+After this, you have to save the credential generated for testing ( YOUR-3SCALE-CREDENTIALS )
+
+==== Getting the 3SCALE-GATEWAY-HTTP-BRIDGE-URL
+Go to the HTTP bridge service (i.e my-bridge-bridge-service)  --> Integration --> Configuration and get the URL from Staging APIcast or Production APIcast whatever you prefer.
+
+=== Testing
+
+Take a look at this article to understand how the Kafka HTTP bridge works: 
+https://strimzi.io/blog/2019/07/19/http-bridge-intro/
+
+NOTE: replace these parameters in the following curl calls: 
+  . *3SCALE-GATEWAY-HTTP-BRIDGE-URL* by the 3scale URL specified in the 3scale Kafka HTTP bridge service configuration
+  . *YOUR-3SCALE-CREDENTIALS* by your 3scale credentials obtained from the 3scale application.
+
+==== 1. Consumer subscription
+
+This calls creates a consumer called "consumer1" belonging to the "cdc-demo-consumer-group" group.
+
+[source,console]
+----
+curl --location --request POST 'https://3SCALE-GATEWAY-HTTP-BRIDGE-URL/consumers/cdc-demo-consumer-group?user_key=YOUR-3SCALE-CREDENTIALS' \
+--header 'Accept: application/vnd.kafka.v2+json' \
+--header 'Content-Type: application/vnd.kafka.v2+json' \
+--data-raw '{
+    "name": "consumer1",
+    "format": "json",
+    "auto.offset.reset": "earliest",
+    "enable.auto.commit": false,
+    "fetch.min.bytes": 512,
+    "consumer.request.timeout.ms": 30000,
+    "isolation.level": "read_committed"
+}'
+----
+
+==== 2. Topics subscription
+
+[source,console]
+----
+curl --location --request POST 'https://3SCALE-GATEWAY-HTTP-BRIDGE-URL/consumers/cdc-demo-consumer-group/instances/consumer1/subscription?user_key=YOUR-3SCALE-CREDENTIALS' \
+--header 'Accept: application/vnd.kafka.v2+json' \
+--header 'Content-Type: application/vnd.kafka.v2+json' \
+--data-raw '{
+    "topics": [
+       "inventory.orders",
+       "inventory.inventory.products",
+       "inventory.inventory.customers"
+    ]
+}'
+----
+
+==== 3. Get CDC records
+
+NOTE: you need to call many times before obtaining a result otherwise you see something like "..topics:[]"
+Read these links to understand why:
+https://github.com/strimzi/strimzi-kafka-bridge/issues/520 
+https://access.redhat.com/documentation/en-us/red_hat_amq_streams/2.1/html/using_the_amq_streams_kafka_bridge/assembly-kafka-bridge-quickstart-bridge
+
+[source,console]
+----
+curl --location --request GET 'https://3SCALE-GATEWAY-HTTP-BRIDGE-URL/consumers/cdc-demo-consumer-group/instances/consumer1/records?user_key=YOUR-3SCALE-CREDENTIALS' \
+--header 'Accept: application/vnd.kafka.json.v2+json'
+----
+
+Example using Postman:
+
+image::images/3scale-postman-test.png[]
+
