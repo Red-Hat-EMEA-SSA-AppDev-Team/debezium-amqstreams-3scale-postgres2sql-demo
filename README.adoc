@@ -128,7 +128,9 @@ oc apply -f 04-debezium-postgresql-connect.yml -n appdev-kafka
 oc apply -f 05-debezium-postgresql-connector.yml -n appdev-kafka
 ----
 
-=== Create a Custom AMQ Streams Kafka Connect Image
+=== Create a Custom AMQ Streams Kafka Connect Image 
+
+*Note* You don't have to do anything in this section if you have access this file: http://httpd-example-appdev-kafka.apps.ocp4.quitala.eu/camel-sql-kafka-connector-0.11.5.tar.gz ,since I built the connector tar.gz for you.
 
 Build and push a custom container image for AMQ Streams Kafka Connect:
 
